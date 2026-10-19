@@ -8,32 +8,89 @@
   </head>
   <body>
     <main>
-      <header>
+      <header class="top">
         <div>
-          <p class="eyebrow">LABORATÓRIO LOCAL</p>
+          <p class="eyebrow">Laboratório local de estratégias</p>
           <h1>SafeTradeLab</h1>
-          <p class="subtitle">Preços reais. Dinheiro virtual. Nenhuma carteira conectada.</p>
+          <p class="subtitle">Testa estratégias com <b>preços reais</b> e <b>dinheiro virtual</b>. Nada aqui compra, vende ou move dinheiro de verdade.</p>
         </div>
-        <div id="mode" class="mode">PAPER ONLY</div>
+        <div class="mode" title="Não há carteira, corretora ou chave conectada. Todas as operações são simuladas.">
+          <span class="mode-dot" aria-hidden="true"></span>
+          <span>
+            <b>Modo simulação</b>
+            <small>sem dinheiro real</small>
+          </span>
+        </div>
       </header>
-      <section id="status" class="status">Carregando dados...</section>
-      <section>
-        <h2>Mercado</h2>
-        <div id="prices" class="grid"></div>
+
+      <section id="status" class="status connecting" role="status" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <div>
+          <p id="status-title" class="status-title">Conectando ao painel...</p>
+          <p id="status-detail" class="status-detail">Buscando os dados mais recentes.</p>
+        </div>
       </section>
-      <section>
-        <h2>Estratégias</h2>
-        <div id="portfolios" class="grid"></div>
+
+      <ol class="howto" aria-label="Como funciona">
+        <li><b>1. Coleta</b><span>Lê o preço público da Kraken a cada <span id="interval-label">15 s</span>.</span></li>
+        <li><b>2. Decide</b><span>Cada estratégia decide sozinha se compra, vende ou espera.</span></li>
+        <li><b>3. Compara</b><span>Todas começaram com <span id="initial-cash-label">US$ 1.000</span> virtuais. Veja quem ganhou ou perdeu.</span></li>
+      </ol>
+
+      <section aria-labelledby="h-strategies">
+        <div class="section-head">
+          <div>
+            <h2 id="h-strategies">Estratégias</h2>
+            <p class="section-hint">Ordenadas pelo resultado. O <b>Buy &amp; Hold</b> é a referência: uma estratégia só é boa se superar ele.</p>
+          </div>
+        </div>
+        <div id="portfolios" class="strategy-grid"></div>
       </section>
-      <section>
-        <h2>Scanner adaptativo</h2>
-        <div id="signals" class="signals"></div>
+
+      <section aria-labelledby="h-activity">
+        <div class="section-head">
+          <div>
+            <h2 id="h-activity">Atividade recente</h2>
+            <p class="section-hint">Últimas operações simuladas, da mais nova para a mais antiga.</p>
+          </div>
+          <div id="trade-filters" class="filters" role="group" aria-label="Filtrar por estratégia"></div>
+        </div>
+        <div id="trades" class="panel"></div>
       </section>
-      <section>
-        <h2>Atividade recente</h2>
-        <div id="trades" class="trades"></div>
+
+      <section aria-labelledby="h-signals">
+        <div class="section-head">
+          <div>
+            <h2 id="h-signals">Scanner do Adaptive Trader</h2>
+            <p class="section-hint">Como o Adaptive Trader avalia cada mercado agora. Pontuação de −7 a +5: <span class="tag buy">Compra</span> a partir de +4, <span class="tag sell">Venda</span> em −3 ou menos, <span class="tag wait">Aguardar</span> no meio.</p>
+          </div>
+          <div id="signal-summary" class="counts"></div>
+        </div>
+        <div id="adaptive-alert"></div>
+        <div class="split">
+          <div id="signals" class="panel"></div>
+          <aside class="panel decisions" aria-labelledby="h-decisions">
+            <h3 id="h-decisions">Últimas decisões</h3>
+            <div id="decisions"></div>
+          </aside>
+        </div>
       </section>
-      <footer>Taxa simulada: 0,10% · Slippage simulado: 0,05% · Fonte: Kraken ticker público</footer>
+
+      <section aria-labelledby="h-market">
+        <div class="section-head">
+          <div>
+            <h2 id="h-market">Mercado</h2>
+            <p class="section-hint">Preço atual e variação desde que o laboratório começou a coletar dados.</p>
+          </div>
+          <button id="market-toggle" class="ghost" type="button" hidden></button>
+        </div>
+        <div id="prices" class="panel"></div>
+      </section>
+
+      <footer>
+        <p id="footer-costs">Taxa simulada: 0,10% · Slippage simulado: 0,05% · Fonte: Kraken ticker público</p>
+        <p>Nenhuma ordem real é enviada. Os resultados são simulações e não garantem ganhos futuros.</p>
+      </footer>
     </main>
     <script src="/app.js" defer></script>
   </body>
