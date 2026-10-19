@@ -9,7 +9,11 @@ test('market adapter is unauthenticated GET-only and validates the response', as
     return {
       ok: true,
       headers: new Headers({ 'content-length': '200' }),
-      json: async () => ({ error: [], result: { XXBTZUSD: { c: ['60000'] }, XETHZUSD: { c: ['3000'] }, SOLUSD: { c: ['150'] } } }),
+      json: async () => ({ error: [], result: {
+        'BTC/USD': { c: ['60000'] }, 'ETH/USD': { c: ['3000'] }, 'SOL/USD': { c: ['150'] },
+        'XRP/USD': { c: ['1'] }, 'ADA/USD': { c: ['0.5'] }, 'DOGE/USD': { c: ['0.2'] },
+        'LINK/USD': { c: ['15'] }, 'AVAX/USD': { c: ['25'] },
+      } }),
     };
   };
   const result = await fetchPrices({ fetchImpl });

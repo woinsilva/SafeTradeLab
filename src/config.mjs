@@ -16,5 +16,12 @@ export const config = Object.freeze({
   initialCashUsd: numberSetting('INITIAL_CASH_USD', 1_000, { min: 1, max: 1_000_000 }),
   feeRate: 0.001,
   slippageRate: 0.0005,
+  maxOpenPositions: 3,
+  positionAllocation: 0.25,
+  stopLossPercent: 0.02,
+  takeProfitPercent: 0.04,
+  trailingStopPercent: 0.015,
+  maxDrawdownPercent: 0.05,
+  cooldownMs: 5 * 60_000,
   dataFile: path.resolve('data', 'state.json'),
 });

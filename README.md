@@ -20,6 +20,7 @@ Open <http://127.0.0.1:18790>.
 - **Buy & Hold**: invests once in an equal-weight BTC/ETH/SOL basket; benchmark, not a promise of profit.
 - **Momentum**: buys when the short moving average is above the long moving average and exits on reversal.
 - **Mean Reversion**: buys when price is sufficiently below its moving average and exits after recovery.
+- **Adaptive Trader**: scans BTC, ETH, SOL, XRP, ADA, DOGE, LINK, and AVAX; ranks momentum, trend, RSI, and volatility; holds at most three positions; and applies stop-loss, take-profit, trailing-stop, cooldown, and portfolio drawdown limits.
 
 The first two strategies need enough collected samples before trading. Leave the service running so it can build history. Data is stored in `data/state.json` and survives restarts.
 

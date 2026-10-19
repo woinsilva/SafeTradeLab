@@ -36,6 +36,19 @@ function render(data) {
     return card;
   }));
 
+  const signals = document.querySelector('#signals');
+  signals.replaceChildren(...Object.entries(data.adaptive?.signals ?? {}).map(([symbol, signal]) => {
+    const row = element('div', 'signal');
+    const labelClass = signal.label === 'COMPRA' ? 'positive' : signal.label === 'VENDA' ? 'negative' : '';
+    row.append(
+      element('b', '', symbol),
+      element('span', labelClass, signal.label),
+      element('span', '', signal.ready ? `${signal.score > 0 ? '+' : ''}${signal.score}` : '—'),
+      element('small', '', signal.reason),
+    );
+    return row;
+  }));
+
   const allTrades = Object.values(data.portfolios).flatMap((portfolio) => portfolio.trades.map((trade) => ({ ...trade, strategy: portfolio.name })))
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 30);
   const trades = document.querySelector('#trades');
@@ -49,7 +62,7 @@ function render(data) {
       element('span', '', new Date(trade.timestamp).toLocaleString('pt-BR')),
       element('span', '', trade.strategy),
       element('b', trade.side === 'BUY' ? 'positive' : 'negative', `${trade.side} ${trade.symbol}`),
-      element('span', '', `${money.format(trade.notionalUsd)} · taxa ${money.format(trade.feeUsd)}`),
+      element('span', '', `${money.format(trade.notionalUsd)} · taxa ${money.format(trade.feeUsd)} · ${trade.reason ?? ''}`),
     );
     return row;
   }));

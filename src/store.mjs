@@ -4,7 +4,7 @@ import path from 'node:path';
 export async function loadState(file, fallback) {
   try {
     const parsed = JSON.parse(await readFile(file, 'utf8'));
-    if (parsed?.schemaVersion !== 1 || parsed?.mode !== 'PAPER_ONLY') throw new Error('Unsupported state file');
+    if (![1, 2].includes(parsed?.schemaVersion) || parsed?.mode !== 'PAPER_ONLY') throw new Error('Unsupported state file');
     return parsed;
   } catch (error) {
     if (error.code === 'ENOENT') return fallback;

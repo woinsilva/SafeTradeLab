@@ -1,7 +1,6 @@
 import { SYMBOLS } from './domain.mjs';
 
-const ENDPOINT = new URL('https://api.kraken.com/0/public/Ticker?pair=XBTUSD,ETHUSD,SOLUSD');
-const KRAKEN_KEYS = Object.freeze({ BTC: 'XXBTZUSD', ETH: 'XETHZUSD', SOL: 'SOLUSD' });
+const ENDPOINT = new URL('https://api.kraken.com/0/public/Ticker?pair=BTCUSD,ETHUSD,SOLUSD,XRPUSD,ADAUSD,DOGEUSD,LINKUSD,AVAXUSD&assetVersion=1');
 
 function validateEndpoint(url) {
   if (url.protocol !== 'https:' || url.hostname !== 'api.kraken.com' || url.pathname !== '/0/public/Ticker') {
@@ -27,7 +26,7 @@ export async function fetchPrices({ fetchImpl = fetch } = {}) {
   const timestamp = new Date().toISOString();
   const prices = {};
   for (const symbol of SYMBOLS) {
-    const ticker = body.result[KRAKEN_KEYS[symbol]];
+    const ticker = body.result[`${symbol}/USD`];
     const usd = Number(ticker?.c?.[0]);
     if (!Number.isFinite(usd) || usd <= 0) throw new Error(`Invalid ${symbol} price`);
     prices[symbol] = { usd, timestamp, source: 'Kraken public ticker' };

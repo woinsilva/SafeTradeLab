@@ -4,13 +4,13 @@ import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.mjs';
-import { createInitialState, summarizeState } from './domain.mjs';
+import { createInitialState, migrateState, summarizeState } from './domain.mjs';
 import { applyStrategies, recordPrices } from './engine.mjs';
 import { fetchPrices, marketDataPolicy } from './market-data.mjs';
 import { loadState, saveState } from './store.mjs';
 
 const publicRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
-let state = await loadState(config.dataFile, createInitialState(config.initialCashUsd));
+let state = migrateState(await loadState(config.dataFile, createInitialState(config.initialCashUsd)), config.initialCashUsd);
 let updateInProgress = false;
 const streamClients = new Set();
 

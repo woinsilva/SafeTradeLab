@@ -20,6 +20,10 @@ h2 { margin-top: 36px; font-size: 1rem; text-transform: uppercase; letter-spacin
 .trades { border: 1px solid #1d4035; border-radius: 16px; overflow: hidden; background: #0e211c; }
 .trade { display: grid; grid-template-columns: 1.25fr 1fr .7fr 1fr; gap: 12px; padding: 13px 16px; border-bottom: 1px solid #18382e; font-size: .88rem; }
 .trade:last-child { border-bottom: 0; }
+.signals { border: 1px solid #1d4035; border-radius: 16px; overflow: hidden; background: #0e211c; }
+.signal { display: grid; grid-template-columns: .5fr .8fr .4fr 2fr; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid #18382e; }
+.signal:last-child { border-bottom: 0; }
+.signal small { color: #8da89e; }
 .empty { padding: 20px; color: #8da89e; }
 footer { margin-top: 38px; color: #6e8a80; font-size: .78rem; }
-@media (max-width: 700px) { header { flex-direction: column; } .trade { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 700px) { header { flex-direction: column; } .trade, .signal { grid-template-columns: 1fr 1fr; } }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createPortfolio, executePaperTrade, portfolioValue } from '../src/domain.mjs';
+import { createPortfolio, executePaperTrade, migrateState, portfolioValue } from '../src/domain.mjs';
 
 test('paper buy and sell account for fees and slippage without overspending', () => {
   const portfolio = createPortfolio('test', 1_000);
@@ -16,6 +16,21 @@ test('paper buy and sell account for fees and slippage without overspending', ()
 
 test('broker rejects unknown assets and sides', () => {
   const portfolio = createPortfolio('test', 1_000);
-  assert.throws(() => executePaperTrade(portfolio, { symbol: 'DOGE', side: 'BUY', requestedUsd: 10, priceUsd: 1, feeRate: 0, slippageRate: 0, timestamp: 'now' }), /Unsupported symbol/);
+  assert.throws(() => executePaperTrade(portfolio, { symbol: 'DOT', side: 'BUY', requestedUsd: 10, priceUsd: 1, feeRate: 0, slippageRate: 0, timestamp: 'now' }), /Unsupported symbol/);
   assert.throws(() => executePaperTrade(portfolio, { symbol: 'BTC', side: 'TRANSFER', requestedUsd: 10, priceUsd: 1, feeRate: 0, slippageRate: 0, timestamp: 'now' }), /Unsupported side/);
+});
+
+test('schema migration preserves old balances and adds the adaptive portfolio', () => {
+  const old = {
+    schemaVersion: 1,
+    mode: 'PAPER_ONLY',
+    history: { BTC: [{ usd: 100 }] },
+    portfolios: { buyHold: createPortfolio('Buy & Hold', 1_000) },
+  };
+  old.portfolios.buyHold.cashUsd = 900;
+  const migrated = migrateState(old, 1_000);
+  assert.equal(migrated.schemaVersion, 2);
+  assert.equal(migrated.portfolios.buyHold.cashUsd, 900);
+  assert.equal(migrated.portfolios.adaptive.cashUsd, 1_000);
+  assert.deepEqual(migrated.history.AVAX, []);
 });
