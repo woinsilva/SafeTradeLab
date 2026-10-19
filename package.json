@@ -1,0 +1,15 @@
+{
+  "name": "safe-trade-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Clean-room paper trading lab with public market data and no live execution capability.",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test",
+    "check": "node --check src/server.mjs && node --check src/domain.mjs && node --check src/engine.mjs && node --check src/market-data.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SafeTradeLab</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">LABORATÓRIO LOCAL</p>
+          <h1>SafeTradeLab</h1>
+          <p class="subtitle">Preços reais. Dinheiro virtual. Nenhuma carteira conectada.</p>
+        </div>
+        <div id="mode" class="mode">PAPER ONLY</div>
+      </header>
+      <section id="status" class="status">Carregando dados...</section>
+      <section>
+        <h2>Mercado</h2>
+        <div id="prices" class="grid"></div>
+      </section>
+      <section>
+        <h2>Estratégias</h2>
+        <div id="portfolios" class="grid"></div>
+      </section>
+      <section>
+        <h2>Atividade recente</h2>
+        <div id="trades" class="trades"></div>
+      </section>
+      <footer>Taxa simulada: 0,10% · Slippage simulado: 0,05% · Fonte: Kraken ticker público</footer>
+    </main>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

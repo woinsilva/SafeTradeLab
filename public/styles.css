@@ -1,0 +1,25 @@
+:root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #07110f; color: #e7f5ef; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top right, #12382d, transparent 36rem), #07110f; }
+main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 42px 0; }
+header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 4.5rem); letter-spacing: -.06em; }
+h2 { margin-top: 36px; font-size: 1rem; text-transform: uppercase; letter-spacing: .12em; color: #87b8a7; }
+.eyebrow, .label { color: #6ce0b4; font-weight: 750; letter-spacing: .1em; }
+.eyebrow { font-size: .72rem; margin-bottom: 10px; }
+.subtitle { color: #a4bcb3; max-width: 560px; }
+.mode { border: 1px solid #42bd90; color: #70e4b7; background: #0c2b22; border-radius: 999px; padding: 10px 14px; font-size: .75rem; font-weight: 800; white-space: nowrap; }
+.status { margin-top: 28px; background: #0e211c; border: 1px solid #1d4035; padding: 14px 16px; border-radius: 12px; color: #a7c8bc; }
+.status.error { border-color: #844842; color: #ffaaa0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.card { display: flex; flex-direction: column; gap: 8px; background: rgba(14, 33, 28, .86); border: 1px solid #1d4035; border-radius: 16px; padding: 20px; box-shadow: 0 16px 60px #0004; }
+.card strong { font-size: 1.65rem; }
+.card small { color: #8da89e; }
+.positive { color: #72e6b9; }
+.negative { color: #ff8f83; }
+.trades { border: 1px solid #1d4035; border-radius: 16px; overflow: hidden; background: #0e211c; }
+.trade { display: grid; grid-template-columns: 1.25fr 1fr .7fr 1fr; gap: 12px; padding: 13px 16px; border-bottom: 1px solid #18382e; font-size: .88rem; }
+.trade:last-child { border-bottom: 0; }
+.empty { padding: 20px; color: #8da89e; }
+footer { margin-top: 38px; color: #6e8a80; font-size: .78rem; }
+@media (max-width: 700px) { header { flex-direction: column; } .trade { grid-template-columns: 1fr 1fr; } }
