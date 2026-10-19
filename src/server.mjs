@@ -12,6 +12,21 @@ import { loadState, saveState } from './store.mjs';
 const publicRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 let state = await loadState(config.dataFile, createInitialState(config.initialCashUsd));
 let updateInProgress = false;
+const streamClients = new Set();
+
+function publicState() {
+  return {
+    ...summarizeState(state),
+    marketDataPolicy,
+    simulation: { feeRate: config.feeRate, slippageRate: config.slippageRate },
+    refreshIntervalMs: config.pollIntervalMs,
+  };
+}
+
+function broadcastState() {
+  const event = `event: state\ndata: ${JSON.stringify(publicState())}\n\n`;
+  for (const client of streamClients) client.write(event);
+}
 
 async function updateMarket() {
   if (updateInProgress) return;
@@ -21,6 +36,7 @@ async function updateMarket() {
     recordPrices(state, prices);
     applyStrategies(state, config);
     await saveState(config.dataFile, state);
+    broadcastState();
   } catch (error) {
     state.lastMarketError = { timestamp: new Date().toISOString(), message: String(error.message ?? error).slice(0, 200) };
     console.error(`[market] ${state.lastMarketError.message}`);
@@ -53,7 +69,18 @@ const server = createServer(async (request, response) => {
     }
     if (url.pathname === '/api/state') {
       response.writeHead(200, { ...securityHeaders, 'content-type': 'application/json; charset=utf-8' });
-      response.end(JSON.stringify({ ...summarizeState(state), marketDataPolicy, simulation: { feeRate: config.feeRate, slippageRate: config.slippageRate } }));
+      response.end(JSON.stringify(publicState()));
+      return;
+    }
+    if (url.pathname === '/api/stream') {
+      response.writeHead(200, {
+        ...securityHeaders,
+        'content-type': 'text/event-stream; charset=utf-8',
+        connection: 'keep-alive',
+      });
+      response.write(`event: state\ndata: ${JSON.stringify(publicState())}\n\n`);
+      streamClients.add(response);
+      request.on('close', () => streamClients.delete(response));
       return;
     }
     if (url.pathname === '/health') {
@@ -78,5 +105,9 @@ const timer = setInterval(() => void updateMarket(), config.pollIntervalMs);
 timer.unref();
 
 for (const signal of ['SIGINT', 'SIGTERM']) {
-  process.on(signal, () => server.close(() => process.exit(0)));
+  process.on(signal, () => {
+    clearInterval(timer);
+    for (const client of streamClients) client.end();
+    server.close(() => process.exit(0));
+  });
 }

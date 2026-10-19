@@ -68,4 +68,19 @@ async function refresh() {
 }
 
 void refresh();
-setInterval(refresh, 15_000);
+
+const stream = new EventSource('/api/stream');
+stream.addEventListener('state', (event) => {
+  try {
+    render(JSON.parse(event.data));
+  } catch {
+    // A malformed local event is ignored; the fallback request will retry.
+  }
+});
+stream.onerror = () => {
+  const status = document.querySelector('#status');
+  status.textContent = 'Reconectando ao fluxo local de preços...';
+  status.className = 'status error';
+};
+
+setInterval(refresh, 60_000);

@@ -2,7 +2,7 @@
 
 Clean-room market simulation built to answer one question safely: **would a strategy have made or lost money using real market prices?**
 
-The current version is paper-only. It cannot connect a wallet, sign a transaction, place an exchange order, or move money. Prices come from Kraken's public read-only ticker endpoint. Each strategy starts with its own virtual USD 1,000 portfolio and includes simulated fees and slippage.
+The current version is paper-only. It cannot connect a wallet, sign a transaction, place an exchange order, or move money. Prices come from Kraken's public read-only ticker endpoint every 15 seconds, and each successful update is pushed immediately to the dashboard. Each strategy starts with its own virtual USD 1,000 portfolio and includes simulated fees and slippage.
 
 ## Run
 
