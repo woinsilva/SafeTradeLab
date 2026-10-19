@@ -15,6 +15,17 @@ npm start
 
 Open <http://127.0.0.1:18790>.
 
+## Docker
+
+Docker Compose keeps the dashboard local to this computer and persists simulation data in the ignored `data/` directory.
+
+```powershell
+docker compose up --build -d
+docker compose ps
+```
+
+Open <http://127.0.0.1:18790>. To stop the service without deleting its history, run `docker compose down`. The simulation history remains in `data/state.json`.
+
 ## Strategies
 
 - **Buy & Hold**: invests once in an equal-weight BTC/ETH/SOL basket; benchmark, not a promise of profit.

@@ -1,0 +1,31 @@
+services:
+  safe-trade-lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: safe-trade-lab:local
+    container_name: safe-trade-lab
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: 18790
+      POLL_INTERVAL_MS: 15000
+      INITIAL_CASH_USD: 1000
+    ports:
+      - "127.0.0.1:18790:18790"
+    volumes:
+      - ./data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    init: true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:18790/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
