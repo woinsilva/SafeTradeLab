@@ -21,6 +21,7 @@ export function createInitialState(initialCashUsd) {
     startedAt: new Date().toISOString(),
     updatedAt: null,
     lastMarketError: null,
+    universe: { symbols: [...SYMBOLS], markets: {}, refreshedAt: null, selectionPolicy: 'bootstrap' },
     prices: {},
     history: Object.fromEntries(SYMBOLS.map((symbol) => [symbol, []])),
     portfolios: {
@@ -38,15 +39,17 @@ export function migrateState(state, initialCashUsd) {
     throw new Error('Unsupported state file');
   }
   state.schemaVersion = 2;
+  state.universe ??= { symbols: [...SYMBOLS], markets: {}, refreshedAt: null, selectionPolicy: 'bootstrap' };
+  state.universe.symbols = Array.isArray(state.universe.symbols) && state.universe.symbols.length ? state.universe.symbols : [...SYMBOLS];
+  state.universe.markets ??= {};
   state.history ??= {};
-  for (const symbol of SYMBOLS) state.history[symbol] ??= [];
+  state.portfolios ??= {};
   for (const portfolio of Object.values(state.portfolios ?? {})) {
     portfolio.positions ??= {};
     for (const symbol of SYMBOLS) portfolio.positions[symbol] ??= 0;
   }
-  state.portfolios ??= {};
   state.portfolios.adaptive ??= createPortfolio('Adaptive Trader', initialCashUsd);
-  for (const symbol of SYMBOLS) state.portfolios.adaptive.positions[symbol] ??= 0;
+  ensureSymbols(state, [...SYMBOLS, ...state.universe.symbols]);
   state.adaptive ??= { positions: {}, signals: {}, decisions: [], peakValueUsd: initialCashUsd, paused: false };
   state.adaptive.positions ??= {};
   state.adaptive.signals ??= {};
@@ -56,14 +59,25 @@ export function migrateState(state, initialCashUsd) {
   return state;
 }
 
+export function ensureSymbols(state, symbols) {
+  state.history ??= {};
+  for (const symbol of symbols) {
+    state.history[symbol] ??= [];
+    for (const portfolio of Object.values(state.portfolios ?? {})) {
+      portfolio.positions ??= {};
+      portfolio.positions[symbol] ??= 0;
+    }
+  }
+}
+
 export function portfolioValue(portfolio, prices) {
-  return portfolio.cashUsd + SYMBOLS.reduce((sum, symbol) => {
-    return sum + portfolio.positions[symbol] * (prices[symbol]?.usd ?? 0);
+  return portfolio.cashUsd + Object.entries(portfolio.positions).reduce((sum, [symbol, quantity]) => {
+    return sum + quantity * (prices[symbol]?.usd ?? 0);
   }, 0);
 }
 
 export function executePaperTrade(portfolio, { symbol, side, requestedUsd, priceUsd, feeRate, slippageRate, timestamp, reason = 'strategy signal' }) {
-  if (!SYMBOLS.includes(symbol)) throw new Error('Unsupported symbol');
+  if (!/^[A-Z0-9.]{2,15}$/.test(symbol) || !(symbol in portfolio.positions)) throw new Error('Unsupported symbol');
   if (!['BUY', 'SELL'].includes(side)) throw new Error('Unsupported side');
   if (![requestedUsd, priceUsd, feeRate, slippageRate].every(Number.isFinite)) throw new Error('Invalid trade number');
   if (requestedUsd <= 0 || priceUsd <= 0 || feeRate < 0 || slippageRate < 0) throw new Error('Invalid trade amount');

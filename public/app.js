@@ -1,5 +1,6 @@
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD' });
 const number = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 });
+const compactMoney = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 });
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -38,13 +39,14 @@ function render(data) {
 
   const signals = document.querySelector('#signals');
   signals.replaceChildren(...Object.entries(data.adaptive?.signals ?? {}).map(([symbol, signal]) => {
+    const market = data.universe?.markets?.[symbol];
     const row = element('div', 'signal');
     const labelClass = signal.label === 'COMPRA' ? 'positive' : signal.label === 'VENDA' ? 'negative' : '';
     row.append(
       element('b', '', symbol),
       element('span', labelClass, signal.label),
       element('span', '', signal.ready ? `${signal.score > 0 ? '+' : ''}${signal.score}` : '—'),
-      element('small', '', signal.reason),
+      element('small', '', `${signal.reason}${market ? ` · #${market.rank} · volume ${compactMoney.format(market.volumeUsd)}` : ''}`),
     );
     return row;
   }));

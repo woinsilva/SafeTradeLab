@@ -4,9 +4,9 @@ import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.mjs';
-import { createInitialState, migrateState, summarizeState } from './domain.mjs';
+import { createInitialState, ensureSymbols, migrateState, summarizeState } from './domain.mjs';
 import { applyStrategies, recordPrices } from './engine.mjs';
-import { fetchPrices, marketDataPolicy } from './market-data.mjs';
+import { discoverUniverse, fetchPrices, marketDataPolicy } from './market-data.mjs';
 import { loadState, saveState } from './store.mjs';
 
 const publicRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
@@ -32,7 +32,19 @@ async function updateMarket() {
   if (updateInProgress) return;
   updateInProgress = true;
   try {
-    const prices = await fetchPrices();
+    const universeAge = Date.now() - Date.parse(state.universe.refreshedAt ?? 0);
+    if (!state.universe.refreshedAt || universeAge >= config.universeRefreshMs) {
+      state.universe = await discoverUniverse({
+        limit: config.universeSize,
+        minimumDailyVolumeUsd: config.minimumDailyVolumeUsd,
+        maximumSpreadPercent: config.maximumSpreadPercent,
+      });
+      ensureSymbols(state, state.universe.symbols);
+    }
+    const held = Object.values(state.portfolios).flatMap((portfolio) => Object.entries(portfolio.positions)
+      .filter(([, quantity]) => quantity > 0.00000001).map(([symbol]) => symbol));
+    const symbols = [...new Set([...state.universe.symbols, ...held])];
+    const prices = await fetchPrices({ symbols });
     recordPrices(state, prices);
     applyStrategies(state, config);
     await saveState(config.dataFile, state);

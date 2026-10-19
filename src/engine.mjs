@@ -1,4 +1,12 @@
-import { SYMBOLS, executePaperTrade, portfolioValue } from './domain.mjs';
+import { executePaperTrade, portfolioValue } from './domain.mjs';
+
+function universeSymbols(state) {
+  return state.universe?.symbols ?? [];
+}
+
+function heldSymbols(portfolio) {
+  return Object.entries(portfolio.positions).filter(([, quantity]) => quantity > 0.00000001).map(([symbol]) => symbol);
+}
 
 function average(samples) {
   return samples.reduce((sum, value) => sum + value, 0) / samples.length;
@@ -62,11 +70,11 @@ function applyAdaptiveStrategy(state, config, now) {
   const drawdown = state.adaptive.peakValueUsd > 0 ? 1 - (value / state.adaptive.peakValueUsd) : 0;
   state.adaptive.paused = drawdown >= config.maxDrawdownPercent;
 
-  for (const symbol of SYMBOLS) {
+  for (const symbol of universeSymbols(state)) {
     state.adaptive.signals[symbol] = signalFor(state.history[symbol].map((point) => point.usd));
   }
 
-  for (const symbol of SYMBOLS) {
+  for (const symbol of heldSymbols(portfolio)) {
     if (!isInvested(portfolio, symbol)) continue;
     const price = state.prices[symbol].usd;
     const position = state.adaptive.positions[symbol];
@@ -79,7 +87,7 @@ function applyAdaptiveStrategy(state, config, now) {
     if (returnSinceEntry <= -config.stopLossPercent) reason = `stop-loss ${(returnSinceEntry * 100).toFixed(2)}%`;
     else if (returnSinceEntry >= config.takeProfitPercent) reason = `take-profit ${(returnSinceEntry * 100).toFixed(2)}%`;
     else if (trailingReturn <= -config.trailingStopPercent) reason = `trailing-stop ${(trailingReturn * 100).toFixed(2)}%`;
-    else if (signal.score <= -3) reason = `reversão do sinal: ${signal.reason}`;
+    else if (signal?.score <= -3) reason = `reversão do sinal: ${signal.reason}`;
     if (reason) {
       executePaperTrade(portfolio, {
         symbol, side: 'SELL', requestedUsd: Number.MAX_SAFE_INTEGER, priceUsd: price,
@@ -97,10 +105,10 @@ function applyAdaptiveStrategy(state, config, now) {
     return;
   }
 
-  const openPositions = SYMBOLS.filter((symbol) => isInvested(portfolio, symbol)).length;
+  const openPositions = heldSymbols(portfolio).length;
   let availableSlots = config.maxOpenPositions - openPositions;
   if (availableSlots <= 0) return;
-  const candidates = SYMBOLS
+  const candidates = universeSymbols(state)
     .filter((symbol) => !isInvested(portfolio, symbol))
     .map((symbol) => ({ symbol, signal: state.adaptive.signals[symbol] }))
     .filter(({ signal }) => signal.ready && signal.score >= 4)
@@ -133,10 +141,11 @@ export function applyStrategies(state, config, now = new Date().toISOString()) {
 
   const benchmark = state.portfolios.buyHold;
   if (benchmark.trades.length === 0) {
-    for (const symbol of SYMBOLS) trade(benchmark, symbol, 'BUY', benchmark.initialCashUsd / SYMBOLS.length, 'benchmark equal-weight');
+    const symbols = universeSymbols(state);
+    for (const symbol of symbols) trade(benchmark, symbol, 'BUY', benchmark.initialCashUsd / symbols.length, 'benchmark equal-weight');
   }
 
-  for (const symbol of SYMBOLS) {
+  for (const symbol of universeSymbols(state)) {
     const samples = state.history[symbol].map((point) => point.usd);
     if (samples.length < 10) continue;
     const price = state.prices[symbol].usd;
@@ -162,7 +171,8 @@ export function applyStrategies(state, config, now = new Date().toISOString()) {
 
 export function recordPrices(state, prices, maxSamples = 5_760) {
   state.prices = prices;
-  for (const symbol of SYMBOLS) {
+  for (const symbol of Object.keys(prices)) {
+    state.history[symbol] ??= [];
     state.history[symbol].push({ timestamp: prices[symbol].timestamp, usd: prices[symbol].usd });
     if (state.history[symbol].length > maxSamples) state.history[symbol].splice(0, state.history[symbol].length - maxSamples);
   }
